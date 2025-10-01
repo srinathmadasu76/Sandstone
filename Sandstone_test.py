@@ -202,34 +202,10 @@ if conchcl==0.:
 else:
     multhcl = 1 
     
-if CalciteRockVolume==0.:
-    multcalcite = 0.
-else:
-    multcalcite = 1
-    
-if QuartzRockVolume==0.:
-    multquartz = 0.
-else:
-    multquartz = 1
 
-if KfelsparRockVolume==0.:
-    multkfelspar = 0.
-else:
-    multkfelspar = 1
-    
-if ClayRockVolume==0.:
-    multclay = 0.
-else:
-    multclay = 1
     
 
 
-
-if AnkeriteRockVolume==0.:
-    multankerite = 0.
-else:
-    multankerite = 1
-    
 
     
 
@@ -288,13 +264,31 @@ if st.button('Calculate'):
               multkaolinite = 0.
           else:
               multkaolinite = 1
-    
-
 
           if MuscoviteRockVolume==0. or v[18]<=0.:
               multmuscovite = 0.
           else:
               multmuscovite = 1
+              
+          if CalciteRockVolume==0. or v[2]<=0.:
+              multcalcite = 0.
+          else:
+              multcalcite = 1
+    
+          if QuartzRockVolume==0. or v[3]<=0.:
+              multquartz = 0.
+          else:
+              multquartz = 1
+
+          if KfelsparRockVolume==0. or v[4]<=0.:
+              multkfelspar = 0.
+          else:
+             multkfelspar = 1
+    
+          if ClayRockVolume==0.or v[5]<=0.:
+              multclay = 0.
+          else:
+              multclay = 1
               
           #rcalcite = -SurfaceareaCalcite*kcoCalcite*np.exp(-EaCalcite*1000/(R*T))*np.power(v[2],0.63)*MolwtCalcite/DensityCalcite
           rhcl = -kcalcite_hcl*multcalcite*np.power(v[0],0.63)*2-kfelspar_hf*multkfelspar*(1+np.power(v[0],0.4))*np.power(v[1],1.2)*3-18*kfelsparh2sif6*multkfelspar*np.power(v[6],0.6)*(v[4])*np.power(v[4]*Molwtkfelspar/(Molwtkfelspar*v[4]+v[7]*Molwtsilica),0.1)-6*kclayh2sif6*multclay*np.power(v[6],0.6)*(v[5])*np.power(v[5]*Molwtclay/(Molwtclay*v[3]+v[7]*Molwtsilica),0.1)-4*kalf2_hcl*multkfelspar*v[8]*np.power(v[0],1.7)*(v[4])*np.power(v[4]*Molwtkfelspar/(Molwtkfelspar*v[4]+v[7]*Molwtsilica),0.1)+4*(-kdolomite_hcl*multdolomite*np.power(v[0],1))*Densitydolomite/Molwtdolomite-2*ksiderite_hcl*multisiderite*np.power(v[0],1)*Densitysiderite/Molwtsiderite+4*(-kankerite_hcl*multankerite*np.power(v[0],1))*Densityankerite/Molwtankerite-nafelspar_hf*multnafelspar*(1+np.power(v[0],0.4))*np.power(v[1],1.2)*3-18*nafelsparh2sif6*multnafelspar*np.power(v[6],0.6)*(v[4])*np.power(v[4]*Molwtnafelspar/(Molwtnafelspar*v[4]+v[7]*Molwtsilica),0.1)-4*kalf2_hcl*multnafelspar*v[8]*np.power(v[0],1.7)*(v[4])*np.power(v[4]*Molwtnafelspar/(Molwtnafelspar*v[4]+v[7]*Molwtsilica),0.1)
