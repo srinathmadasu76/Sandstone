@@ -153,6 +153,13 @@ Densitymuscovite = 2.6 #g/cm3
 Molwtmontmorillonite =  429.6 #g/mol
 Densitymontmorillonite = 2.6 #g/cm3
 
+Molwtnasif6 =  188.06 #g/mol
+Densitynasif6 = 2.68 #g/cm3
+
+
+Molwtksif6 =  220.27 #g/mol
+Densityksif6 = 2.7 #g/cm3
+
 kcalcite_hcl = SurfaceareaCalcite*kcoCalcite*np.exp(-EaCalcite*1000/(R*T))
 kcalcite_hf = SurfaceareaCalcite*0.001*np.exp(-40*1000/(R*T))
 kquartz_hf = SurfaceareaQuartz*kcoQuartz*np.exp(-EaQuartz*1000/(R*T))
@@ -227,6 +234,8 @@ else:
     
 
     
+KspNa = 19189*np.exp(-45001.5/(R*T))
+KspK = 197000*np.exp(-62726/(R*T))
 
     
 #print(rquartz)
@@ -317,10 +326,37 @@ if st.button('Calculate'):
           rmuscovite = (-kmuscovite_hf*multchlorite*v[1]-kmuscovite_h2sif6*multmuscovite*np.power(v[6],1))*Densitymuscovite/Molwtmuscovite*multmuscovite
           rmontmorillonite = (-kmontmorillonite_hf*multmontmorillonite*v[1]-kmontmorillonite_h2sif6*multmontmorillonite*np.power(v[6],1))*Densitymontmorillonite/Molwtmontmorillonite*multmontmorillonite
           
-          return [rhcl,rhf,rcalcite,rquartz,rkfelspar,rclay,rh2sif6,rsilica,ralf2,rsilicagel,rcaf2,rdolomite,rsiderite,rankerite,rzeolite,rnafelspar,rkaolinite,rchlorite,rmuscovite,rmontmorillonite]
+          rNa = nafelspar_hf*multnafelspar*(1+np.power(v[0],0.4))*np.power(v[1],1.2)+6*nafelsparh2sif6*multnafelspar*np.power(v[6],0.6)*(v[4])*np.power(v[4]*Molwtnafelspar/(Molwtnafelspar*v[4]+v[7]*Molwtsilica),0.1)+kalf2_hcl*multnafelspar*v[8]*np.power(v[0],1.7)*(v[4])*np.power(v[4]*Molwtnafelspar/(Molwtnafelspar*v[4]+v[7]*Molwtsilica),0.1)+(kzeolite_hf*multzeolite*v[1]+kzeolite_h2sif6*multzeolite*np.power(v[6],1))*Densityzeolite/Molwtzeolite*multzeolite
+          Q1 = ((v[20] + v[6])+ np.sqrt((v[20] + v[6])*(v[20] + v[6])-4*(v[20]*v[6]-KspNa)))/2.
+          Q2 = ((v[20] + v[6])- np.sqrt((v[20] + v[6])*(v[20] + v[6])-4*(v[20]*v[6]-KspNa)))/2. 
+          Q = Q1
+          if Q2<Q1:
+              Q = Q2
+          else:
+              Q = Q
+          if v[21]<=Q:
+              rNasif6 = 3864.556*np.exp(-2393.34/T)*np.power(Q,2)*(1+v[21])
+          else:
+              rNasif6 = 0.
+         
+          rK = kfelspar_hf*multkfelspar*(1+np.power(v[0],0.4))*np.power(v[1],1.2)+6*kfelsparh2sif6*multkfelspar*np.power(v[6],0.6)*(v[4])*np.power(v[4]*Molwtkfelspar/(Molwtkfelspar*v[4]+v[7]*Molwtsilica),0.1)+kalf2_hcl*multkfelspar*v[8]*np.power(v[0],1.7)*(v[4])*np.power(v[4]*Molwtkfelspar/(Molwtkfelspar*v[4]+v[7]*Molwtsilica),0.1)+(kmuscovite_hf*multchlorite*v[1]+kmuscovite_h2sif6*multmuscovite*np.power(v[6],1))*Densitymuscovite/Molwtmuscovite*multmuscovite
+         
+          Q1 = ((v[22] + v[6])+ np.sqrt((v[22] + v[6])*(v[22] + v[6])-4*(v[22]*v[6]-KspK)))/2.
+          Q2 = ((v[22] + v[6])- np.sqrt((v[22] + v[6])*(v[22] + v[6])-4*(v[22]*v[6]-KspK)))/2. 
+          Q = Q1
+          if Q2<Q1:
+              Q = Q2
+          else:
+              Q = Q
+          if v[23]<=Q:
+              rKsif6 = 3864.556*np.exp(-2393.34/T)*np.power(Q,2)*(1+v[23])
+          else:
+              rKsif6 = 0.
+              
+          return [rhcl,rhf,rcalcite,rquartz,rkfelspar,rclay,rh2sif6,rsilica,ralf2,rsilicagel,rcaf2,rdolomite,rsiderite,rankerite,rzeolite,rnafelspar,rkaolinite,rchlorite,rmuscovite,rmontmorillonite,rNa,rNasif6,rK,rKsif6]
           #return [rcalcite,rquartz,rkfelspar,rclay,rh2sif6felspar,ralf2,rh2sif6clay,rcalcitehf]
       
-    res = solve_ivp(rhs, (0, time), [conchcl, conchf, RockVolume*CalciteRockVolume/MolwtCalcite*DensityCalcite, RockVolume*QuartzRockVolume/MolwtQuartz*DensityQuartz,RockVolume*KfelsparRockVolume*Densitykfelspar/Molwtkfelspar,RockVolume*ClayRockVolume/Molwtclay*Densityclay,0.,0.,0.,0.,0., RockVolume*DolomiteRockVolume/Molwtdolomite*Densitydolomite,RockVolume*SideriteRockVolume/Molwtsiderite*Densitysiderite,RockVolume*AnkeriteRockVolume/Molwtankerite*Densityankerite,RockVolume*ZeoliteRockVolume/Molwtzeolite*Densityzeolite,RockVolume*NafelsparRockVolume*Densitynafelspar/Molwtnafelspar,RockVolume*KaoliniteRockVolume/Molwtkaolinite*Densitykaolinite,RockVolume*ChloriteRockVolume/Molwtchlorite*Densitychlorite,RockVolume*MuscoviteRockVolume/Molwtmuscovite*Densitymuscovite,RockVolume*MontmorilloniteRockVolume/Molwtmontmorillonite*Densitymontmorillonite],t_eval=np.linspace(0, time,10))
+    res = solve_ivp(rhs, (0, time), [conchcl, conchf, RockVolume*CalciteRockVolume/MolwtCalcite*DensityCalcite, RockVolume*QuartzRockVolume/MolwtQuartz*DensityQuartz,RockVolume*KfelsparRockVolume*Densitykfelspar/Molwtkfelspar,RockVolume*ClayRockVolume/Molwtclay*Densityclay,0.,0.,0.,0.,0., RockVolume*DolomiteRockVolume/Molwtdolomite*Densitydolomite,RockVolume*SideriteRockVolume/Molwtsiderite*Densitysiderite,RockVolume*AnkeriteRockVolume/Molwtankerite*Densityankerite,RockVolume*ZeoliteRockVolume/Molwtzeolite*Densityzeolite,RockVolume*NafelsparRockVolume*Densitynafelspar/Molwtnafelspar,RockVolume*KaoliniteRockVolume/Molwtkaolinite*Densitykaolinite,RockVolume*ChloriteRockVolume/Molwtchlorite*Densitychlorite,RockVolume*MuscoviteRockVolume/Molwtmuscovite*Densitymuscovite,RockVolume*MontmorilloniteRockVolume/Molwtmontmorillonite*Densitymontmorillonite,0.,0.,0.,0.],t_eval=np.linspace(0, time,10))
    
     #res = solve_ivp(rhs, (0, time), [RockVolume*CalciteRockVolume, RockVolume*QuartzRockVolume,RockVolume*KfelsparRockVolume,RockVolume*ClayRockVolume,0.,0.,0.,0.],t_eval=np.linspace(0, time,10))
     print("res0=",np.power(res.y[0],1.))
@@ -339,6 +375,8 @@ if st.button('Calculate'):
     print("res13=",np.power(res.y[13],1.))
     print("res14=",np.power(res.y[14],1.))
     print("res15=",np.power(res.y[15],1.))
+    print("res21=",np.power(res.y[21],1.))
+    print("res23=",np.power(res.y[23],1.))
     
     print(list(np.linspace(0, time,10)))
     csilica = 0.
@@ -365,13 +403,13 @@ if st.button('Calculate'):
     st.line_chart(df,x="time (seconds)",y="Silicagel")
     df = pd.DataFrame({'Calcium Fluoride': res.y[10]*Molwtcaf2/Densitycaf2, 'time (seconds)': list(np.linspace(0, time,10))},columns=["Calcium Fluoride","time (seconds)"])
     st.line_chart(df,x="time (seconds)",y="Calcium Fluoride")
-    df = pd.DataFrame({'Porosity': (por+(-res.y[19]*Molwtmontmorillonite/Densitymontmorillonite+RockVolume*MontmorilloniteRockVolume-res.y[18]*Molwtmuscovite/Densitymuscovite+RockVolume*MuscoviteRockVolume-res.y[17]*Molwtchlorite/Densitychlorite+RockVolume*ChloriteRockVolume-res.y[16]*Molwtkaolinite/Densitykaolinite+RockVolume*KaoliniteRockVolume+RockVolume*NafelsparRockVolume-res.y[15]/Densitynafelspar*Molwtnafelspar-res.y[14]*Molwtzeolite/Densityzeolite+RockVolume*ZeoliteRockVolume-res.y[13]*Molwtankerite/Densityankerite+RockVolume*AnkeriteRockVolume-res.y[12]*Molwtsiderite/Densitysiderite+RockVolume*SideriteRockVolume-res.y[11]*Molwtdolomite/Densitydolomite+RockVolume*DolomiteRockVolume-res.y[2]*MolwtCalcite/DensityCalcite+RockVolume*CalciteRockVolume-res.y[5]*Molwtclay/Densityclay+RockVolume*KfelsparRockVolume+RockVolume*QuartzRockVolume-res.y[3]*MolwtQuartz/DensityQuartz+RockVolume*ClayRockVolume-res.y[4]/Densitykfelspar*Molwtkfelspar-res.y[7]*Molwtsilica/Densitysilica-res.y[9]*Molwtsilicagel/Densitysilicagel-res.y[10]*Molwtcaf2/Densitycaf2)/RockVolumereactive), 'time (seconds)': list(np.linspace(0, time,10))},columns=["Porosity","time (seconds)"])
+    df = pd.DataFrame({'Porosity': (por+(-res.y[19]*Molwtmontmorillonite/Densitymontmorillonite+RockVolume*MontmorilloniteRockVolume-res.y[18]*Molwtmuscovite/Densitymuscovite+RockVolume*MuscoviteRockVolume-res.y[17]*Molwtchlorite/Densitychlorite+RockVolume*ChloriteRockVolume-res.y[16]*Molwtkaolinite/Densitykaolinite+RockVolume*KaoliniteRockVolume+RockVolume*NafelsparRockVolume-res.y[15]/Densitynafelspar*Molwtnafelspar-res.y[14]*Molwtzeolite/Densityzeolite+RockVolume*ZeoliteRockVolume-res.y[13]*Molwtankerite/Densityankerite+RockVolume*AnkeriteRockVolume-res.y[12]*Molwtsiderite/Densitysiderite+RockVolume*SideriteRockVolume-res.y[11]*Molwtdolomite/Densitydolomite+RockVolume*DolomiteRockVolume-res.y[2]*MolwtCalcite/DensityCalcite+RockVolume*CalciteRockVolume-res.y[5]*Molwtclay/Densityclay+RockVolume*KfelsparRockVolume+RockVolume*QuartzRockVolume-res.y[3]*MolwtQuartz/DensityQuartz+RockVolume*ClayRockVolume-res.y[4]/Densitykfelspar*Molwtkfelspar-res.y[7]*Molwtsilica/Densitysilica-res.y[9]*Molwtsilicagel/Densitysilicagel-res.y[10]*Molwtcaf2/Densitycaf2-res.y[21]*Molwtnasif6/Densitynasif6-res.y[23]*Molwtksif6/Densityksif6)/RockVolume), 'time (seconds)': list(np.linspace(0, time,10))},columns=["Porosity","time (seconds)"])
 # # #print(np.vstack(((por-res.y[2]*aspmolwt/aspdens), np.linspace(0, time,10))))
     st.line_chart(df,x="time (seconds)",y="Porosity")
     print(df['Porosity'])
-    x = (-res.y[19]*Molwtmontmorillonite/Densitymontmorillonite+RockVolume*MontmorilloniteRockVolume-res.y[18]*Molwtmuscovite/Densitymuscovite+RockVolume*MuscoviteRockVolume-res.y[17]*Molwtchlorite/Densitychlorite+RockVolume*ChloriteRockVolume-res.y[16]*Molwtkaolinite/Densitykaolinite+RockVolume*KaoliniteRockVolume+RockVolume*NafelsparRockVolume-res.y[15]/Densitynafelspar*Molwtnafelspar-res.y[14]*Molwtzeolite/Densityzeolite+RockVolume*ZeoliteRockVolume-res.y[13]*Molwtankerite/Densityankerite+RockVolume*AnkeriteRockVolume-res.y[12]*Molwtsiderite/Densitysiderite+RockVolume*SideriteRockVolume-res.y[11]*Molwtdolomite/Densitydolomite+RockVolume*DolomiteRockVolume-res.y[2]*MolwtCalcite/DensityCalcite+RockVolume*CalciteRockVolume-res.y[5]*Molwtclay/Densityclay+RockVolume*KfelsparRockVolume+RockVolume*QuartzRockVolume-res.y[3]*MolwtQuartz/DensityQuartz+RockVolume*ClayRockVolume-res.y[4]/Densitykfelspar*Molwtkfelspar-res.y[7]*Molwtsilica/Densitysilica-res.y[9]*Molwtsilicagel/Densitysilicagel-res.y[10]*Molwtcaf2/Densitycaf2)
+    x = (-res.y[19]*Molwtmontmorillonite/Densitymontmorillonite+RockVolume*MontmorilloniteRockVolume-res.y[18]*Molwtmuscovite/Densitymuscovite+RockVolume*MuscoviteRockVolume-res.y[17]*Molwtchlorite/Densitychlorite+RockVolume*ChloriteRockVolume-res.y[16]*Molwtkaolinite/Densitykaolinite+RockVolume*KaoliniteRockVolume+RockVolume*NafelsparRockVolume-res.y[15]/Densitynafelspar*Molwtnafelspar-res.y[14]*Molwtzeolite/Densityzeolite+RockVolume*ZeoliteRockVolume-res.y[13]*Molwtankerite/Densityankerite+RockVolume*AnkeriteRockVolume-res.y[12]*Molwtsiderite/Densitysiderite+RockVolume*SideriteRockVolume-res.y[11]*Molwtdolomite/Densitydolomite+RockVolume*DolomiteRockVolume-res.y[2]*MolwtCalcite/DensityCalcite+RockVolume*CalciteRockVolume-res.y[5]*Molwtclay/Densityclay+RockVolume*KfelsparRockVolume+RockVolume*QuartzRockVolume-res.y[3]*MolwtQuartz/DensityQuartz+RockVolume*ClayRockVolume-res.y[4]/Densitykfelspar*Molwtkfelspar-res.y[7]*Molwtsilica/Densitysilica-res.y[9]*Molwtsilicagel/Densitysilicagel-res.y[10]*Molwtcaf2/Densitycaf2-res.y[21]*Molwtnasif6/Densitynasif6)
     print("x=",x)
-    df = pd.DataFrame({'Permeability': kperm*np.power((por+(-res.y[19]*Molwtmontmorillonite/Densitymontmorillonite+RockVolume*MontmorilloniteRockVolume-res.y[18]*Molwtmuscovite/Densitymuscovite+RockVolume*MuscoviteRockVolume-res.y[17]*Molwtchlorite/Densitychlorite+RockVolume*ChloriteRockVolume-res.y[16]*Molwtkaolinite/Densitykaolinite+RockVolume*KaoliniteRockVolume+RockVolume*NafelsparRockVolume-res.y[15]/Densitynafelspar*Molwtnafelspar-res.y[14]*Molwtzeolite/Densityzeolite+RockVolume*ZeoliteRockVolume-res.y[13]*Molwtankerite/Densityankerite+RockVolume*AnkeriteRockVolume-res.y[12]*Molwtsiderite/Densitysiderite+RockVolume*SideriteRockVolume-res.y[11]*Molwtdolomite/Densitydolomite+RockVolume*DolomiteRockVolume-res.y[2]*MolwtCalcite/DensityCalcite+RockVolume*CalciteRockVolume-res.y[5]*Molwtclay/Densityclay+RockVolume*KfelsparRockVolume+RockVolume*QuartzRockVolume-res.y[3]*MolwtQuartz/DensityQuartz+RockVolume*ClayRockVolume-res.y[4]/Densitykfelspar*Molwtkfelspar-res.y[7]*Molwtsilica/Densitysilica-res.y[9]*Molwtsilicagel/Densitysilicagel-res.y[10]*Molwtcaf2/Densitycaf2)/RockVolumereactive)/(por),g), 'time (seconds)': list(np.linspace(0, time,10))},columns=["Permeability","time (seconds)"])
+    df = pd.DataFrame({'Permeability': kperm*np.power((por+(-res.y[19]*Molwtmontmorillonite/Densitymontmorillonite+RockVolume*MontmorilloniteRockVolume-res.y[18]*Molwtmuscovite/Densitymuscovite+RockVolume*MuscoviteRockVolume-res.y[17]*Molwtchlorite/Densitychlorite+RockVolume*ChloriteRockVolume-res.y[16]*Molwtkaolinite/Densitykaolinite+RockVolume*KaoliniteRockVolume+RockVolume*NafelsparRockVolume-res.y[15]/Densitynafelspar*Molwtnafelspar-res.y[14]*Molwtzeolite/Densityzeolite+RockVolume*ZeoliteRockVolume-res.y[13]*Molwtankerite/Densityankerite+RockVolume*AnkeriteRockVolume-res.y[12]*Molwtsiderite/Densitysiderite+RockVolume*SideriteRockVolume-res.y[11]*Molwtdolomite/Densitydolomite+RockVolume*DolomiteRockVolume-res.y[2]*MolwtCalcite/DensityCalcite+RockVolume*CalciteRockVolume-res.y[5]*Molwtclay/Densityclay+RockVolume*KfelsparRockVolume+RockVolume*QuartzRockVolume-res.y[3]*MolwtQuartz/DensityQuartz+RockVolume*ClayRockVolume-res.y[4]/Densitykfelspar*Molwtkfelspar-res.y[7]*Molwtsilica/Densitysilica-res.y[9]*Molwtsilicagel/Densitysilicagel-res.y[10]*Molwtcaf2/Densitycaf2-res.y[21]*Molwtnasif6/Densitynasif6-res.y[23]*Molwtksif6/Densityksif6)/RockVolume)/(por),g), 'time (seconds)': list(np.linspace(0, time,10))},columns=["Permeability","time (seconds)"])
     st.line_chart(df,x="time (seconds)",y="Permeability")
     print(df['Permeability'])
    
