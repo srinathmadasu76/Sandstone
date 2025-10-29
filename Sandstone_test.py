@@ -54,8 +54,8 @@ g = st.number_input('Enter permeability model exponent: ', value=3)
 RockVolume = st.number_input('Enter rock volume cm3: ', value=1000.)
 
 CalciteRockVolume = st.number_input('Enter calcite rock fraction volume : ', value=0.3)
-QuartzRockVolume = st.number_input('Enter quatrz rock fraction volume : ', value=0.2)
-KfelsparRockVolume = st.number_input('Enter k-felspar rock fraction volume : ', value=0.2)
+QuartzRockVolume = st.number_input('Enter quatrz rock fraction volume : ', value=0.0002)
+KfelsparRockVolume = st.number_input('Enter k-felspar rock fraction volume : ', value=0.0002)
 ClayRockVolume = st.number_input('Enter clay rock fraction volume : ', value=0.1)
 
 DolomiteRockVolume = st.number_input('Enter dolomite rock fraction volume : ', value=0.01)
@@ -70,6 +70,12 @@ MontmorilloniteRockVolume = st.number_input('Enter Montmorillonite rock fraction
 
 Nonreactiverockvolume = RockVolume*(1-(CalciteRockVolume+QuartzRockVolume+KfelsparRockVolume+ClayRockVolume+DolomiteRockVolume+SideriteRockVolume+AnkeriteRockVolume+ZeoliteRockVolume+NafelsparRockVolume+KaoliniteRockVolume+ChloriteRockVolume+MuscoviteRockVolume+MontmorilloniteRockVolume))
 RockVolumereactive = RockVolume-Nonreactiverockvolume
+
+if QuartzRockVolume==0.:
+    QuartzRockVolume=0.0002
+if KfelsparRockVolume==0.:
+    KfelsparRockVolume=0.0002   
+    
 R = 8.3144 #J/molK
 T = 273+(Temperature-32)*5/9 #K
 
@@ -84,7 +90,7 @@ MolwtQuartz =  60.1 #g/mol
 DensityQuartz = 2.65 #g/cm3
 SurfaceareaQuartz = 0.05 #(m2/g)
 kcoQuartz = 2.32*np.float_power(10,-8) #mol/m2s
-print("kco=",kcoQuartz)
+
 #kcoQuartz = 1*np.float_power(10,-4)/10000 #mol/m2s
 EaQuartz = 9.56 #KJ/mol
 #EaQuartz = 1.8932 #KJ/mol
@@ -204,12 +210,6 @@ else:
     
 
     
-
-
-
-    
-
-    
 KspNa = 19189*np.exp(-45001.5/(R*T))
 KspK = 197000*np.exp(-62726/(R*T))
 
@@ -217,6 +217,9 @@ KspK = 197000*np.exp(-62726/(R*T))
 #print(rquartz)
 #print("hf=",hftest)
 rsilica = 0.
+sodiumflurosilicate = True
+potassiumflurosilicate = True
+
 if st.button('Calculate'):
     
     def rhs(s, v): 
@@ -295,6 +298,7 @@ if st.button('Calculate'):
           rhf = -kcalcite_hf*multcalcite*v[1]*2-kquartz_hf*multquartz*v[1]*6-kfelspar_hf*multkfelspar*(1+np.power(v[0],0.4))*np.power(v[1],1.2)*19-kclay_hf*v[1]*24-ksilica_hf*v[1]*6*Densitysilica/Molwtsilica-nafelspar_hf*multnafelspar*(1+np.power(v[0],0.4))*np.power(v[1],1.2)*19+(-32*kkaolinite_hf*multkaolinite*v[1]+6*kkaolinite_h2sif6*multkaolinite*np.power(v[6],1))*Densitykaolinite/Molwtkaolinite*multkaolinite+(-30*kchlorite_hf*multchlorite*v[1])*Densitychlorite/Molwtchlorite*multchlorite+(-36*kmuscovite_hf*multchlorite*v[1])*Densitymuscovite/Molwtmuscovite*multmuscovite+(-36*kmontmorillonite_hf*multmontmorillonite*v[1])*Densitymontmorillonite/Molwtmontmorillonite*multmontmorillonite-4*kdolomite_hf*multdolomite*v[1]*Densitydolomite/Molwtdolomite-6*kankerite_hf*multankerite*v[1]*Densityankerite/Molwtankerite
           rcalcite = -kcalcite_hf*multcalcite*v[1]-kcalcite_hcl*multcalcite*np.power(v[0],0.63)
           rquartz = -kquartz_hf*multquartz*v[1]
+         
           rkfelspar = -kfelspar_hf*multkfelspar*(1+np.power(v[0],0.4))*np.power(v[1],1.2)-6*kfelsparh2sif6*multkfelspar*np.power(v[6],0.6)*(v[4])*np.power(v[4]*Molwtkfelspar/(Molwtkfelspar*v[4]+v[7]*Molwtsilica),0.1)-kalf2_hcl*multkfelspar*v[8]*np.power(v[0],1.7)*(v[4])*np.power(v[4]*Molwtkfelspar/(Molwtkfelspar*v[4]+v[7]*Molwtsilica),0.1)
           rclay = -kclay_hf*v[1]+kclayh2sif6*multclay*np.power(v[6],0.6)*(v[5])*np.power(v[5]*Molwtclay/(Molwtclay*v[3]+v[7]*Molwtsilica),0.1)
           rh2sif6felspar = -6*kfelsparh2sif6*multkfelspar*np.power(v[6],0.6)*(v[4])*np.power(v[4]*Molwtkfelspar/(Molwtkfelspar*v[4]+v[7]*Molwtsilica),0.1)
@@ -320,6 +324,7 @@ if st.button('Calculate'):
           rmuscovite = (-kmuscovite_hf*multchlorite*v[1]-kmuscovite_h2sif6*multmuscovite*np.power(v[6],1))*Densitymuscovite/Molwtmuscovite*multmuscovite
           rmontmorillonite = (-kmontmorillonite_hf*multmontmorillonite*v[1]-kmontmorillonite_h2sif6*multmontmorillonite*np.power(v[6],1))*Densitymontmorillonite/Molwtmontmorillonite*multmontmorillonite
           
+          
           rNa = nafelspar_hf*multnafelspar*(1+np.power(v[0],0.4))*np.power(v[1],1.2)+6*nafelsparh2sif6*multnafelspar*np.power(v[6],0.6)*(v[4])*np.power(v[4]*Molwtnafelspar/(Molwtnafelspar*v[4]+v[7]*Molwtsilica),0.1)+kalf2_hcl*multnafelspar*v[8]*np.power(v[0],1.7)*(v[4])*np.power(v[4]*Molwtnafelspar/(Molwtnafelspar*v[4]+v[7]*Molwtsilica),0.1)+(kzeolite_hf*multzeolite*v[1]+kzeolite_h2sif6*multzeolite*np.power(v[6],1))*Densityzeolite/Molwtzeolite*multzeolite
           Q1 = ((v[20] + v[6])+ np.sqrt((v[20] + v[6])*(v[20] + v[6])-4*(v[20]*v[6]-KspNa)))/2.
           Q2 = ((v[20] + v[6])- np.sqrt((v[20] + v[6])*(v[20] + v[6])-4*(v[20]*v[6]-KspNa)))/2. 
@@ -328,7 +333,7 @@ if st.button('Calculate'):
               Q = Q2
           else:
               Q = Q
-          if v[21]<=Q:
+          if v[21]<=Q and sodiumflurosilicate:
               rNasif6 = 3864.556*np.exp(-2393.34/T)*np.power(Q,2)*(1+v[21])
           else:
               rNasif6 = 0.
@@ -342,7 +347,7 @@ if st.button('Calculate'):
               Q = Q2
           else:
               Q = Q
-          if v[23]<=Q:
+          if v[23]<=Q and potassiumflurosilicate:
               rKsif6 = 3864.556*np.exp(-2393.34/T)*np.power(Q,2)*(1+v[23])
           else:
               rKsif6 = 0.
